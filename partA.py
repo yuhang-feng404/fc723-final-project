@@ -1,7 +1,7 @@
 import random
 import string
 
-# Initial seat map
+# Initial seat map with placeholders for missing seats
 seats = [
     ["1A", "2A", "3A", "4A", "...", "...", "77A", "78A", "79A", "80A"],
     ["1B", "2B", "3B", "4B", "...", "...", "77B", "78B", "79B", "80B"],
@@ -12,34 +12,104 @@ seats = [
     ["1F", "2F", "3F", "4F", "...", "...", "S", "S", "79F", "80F"],
 ]
 
+# Dictionary to store booking references and customer details
+booking_data = {}
+
 def display_seats():
+    """
+    Displays the current state of the seats.
+    """
     for row in seats:
         print(" ".join(row))
 
 def check_availability(seat):
+    """
+    Checks if a specific seat is available.
+    
+    Args:
+    seat (str): The seat identifier.
+    
+    Returns:
+    bool: True if the seat is available, False otherwise.
+    """
     for row in seats:
         if seat in row:
+            # Seat is available if it is not marked as "R" (reserved), "X" (blocked), or "S" (special)
             return True if row[row.index(seat)] not in ["R", "X", "S"] else False
     return False
 
-def book_seat(seat):
+def generate_booking_reference():
+    """
+    Generates a unique 8-character alphanumeric booking reference.
+    
+    Returns:
+    str: A unique booking reference.
+    """
+    while True:
+        # Generate a random 8-character alphanumeric string
+        reference = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        # Ensure the reference is unique
+        if reference not in booking_data:
+            return reference
+
+def book_seat(seat, passport, first_name, last_name):
+    """
+    Books a seat and stores customer details.
+    
+    Args:
+    seat (str): The seat identifier.
+    passport (str): Customer's passport number.
+    first_name (str): Customer's first name.
+    last_name (str): Customer's last name.
+    
+    Returns:
+    bool: True if the seat is successfully booked, False otherwise.
+    """
     for row in seats:
         if seat in row:
             if row[row.index(seat)] not in ["R", "X", "S"]:
-                row[row.index(seat)] = "R"
+                # Generate a booking reference
+                booking_reference = generate_booking_reference()
+                # Mark the seat as reserved with the booking reference
+                row[row.index(seat)] = booking_reference
+                # Store the customer details associated with the booking reference
+                booking_data[booking_reference] = {
+                    "passport": passport,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "seat": seat
+                }
                 return True
     return False
 
 def free_seat(seat):
+    """
+    Frees a booked seat and removes customer details.
+    
+    Args:
+    seat (str): The seat identifier.
+    
+    Returns:
+    bool: True if the seat is successfully freed, False otherwise.
+    """
     for row in seats:
         if seat in row:
-            if row[row.index(seat)] == "R":
+            booking_reference = row[row.index(seat)]
+            if booking_reference not in ["F", "X", "S"]:
+                # Reset the seat to its original identifier
                 row[row.index(seat)] = seat
+                # Remove the customer details associated with the booking reference
+                if booking_reference in booking_data:
+                    del booking_data[booking_reference]
                 return True
     return False
 
 def menu():
+    """
+    Displays the menu and processes user input.
+    """
     while True:
+        # Display menu options
         print("\nMenu:")
         print("1. Check availability of seat")
         print("2. Book a seat")
@@ -47,6 +117,7 @@ def menu():
         print("4. Show booking state")
         print("5. Exit program")
 
+        # Get user choice and validate input
         choice = input("Enter your choice: ")
         
         if choice == '1':
@@ -57,7 +128,10 @@ def menu():
                 print(f"Seat {seat} is not available.")
         elif choice == '2':
             seat = input("Enter seat to book: ")
-            if book_seat(seat):
+            passport = input("Enter passport number: ")
+            first_name = input("Enter first name: ")
+            last_name = input("Enter last name: ")
+            if book_seat(seat, passport, first_name, last_name):
                 print(f"Seat {seat} has been booked.")
             else:
                 print(f"Seat {seat} cannot be booked.")
