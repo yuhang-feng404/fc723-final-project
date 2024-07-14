@@ -1,136 +1,80 @@
-class SeatBooking:
-    def __init__(self, rows=80, columns=['A', 'B', 'C', 'D', 'E', 'F']):
-        """
-        Initialize the SeatBooking class with a default layout.
-        """
-        self.rows = rows
-        self.columns = columns
-        self.seats = self.create_seat_layout()
+mport random
+import string
 
-    def create_seat_layout(self):
-        """
-        Create the initial layout of the seats. 'F' for free, 'X' for aisle, and 'S' for storage.
-        """
-        layout = {}
-        for column in self.columns:
-            layout[column] = ['F' for _ in range(self.rows)]
-        return layout
+# Initial seat map
+seats = [
+    ["1A", "2A", "3A", "4A", "...", "...", "77A", "78A", "79A", "80A"],
+    ["1B", "2B", "3B", "4B", "...", "...", "77B", "78B", "79B", "80B"],
+    ["1C", "2C", "3C", "4C", "...", "...", "77C", "78C", "79C", "80C"],
+    ["X", "X", "X", "X", "...", "...", "X", "X", "X", "X"],
+    ["1D", "2D", "3D", "4D", "...", "...", "S", "S", "79D", "80D"],
+    ["1E", "2E", "3E", "4E", "...", "...", "S", "S", "79E", "80E"],
+    ["1F", "2F", "3F", "4F", "...", "...", "S", "S", "79F", "80F"],
+]
 
-    def display_seats(self):
-        """
-        Display the current booking state of the seats.
-        """
-        for column in self.columns:
-            print(f"{column}: ", end="")
-            for seat in self.seats[column]:
-                print(seat, end=" ")
-            print()
+def display_seats():
+    for row in seats:
+        print(" ".join(row))
 
-    def check_availability(self, row, column):
-        """
-        Check if a specific seat is available.
-        """
-        if self.seats[column][row-1] == 'F':
-            return True
-        return False
+def check_availability(seat):
+    for row in seats:
+        if seat in row:
+            return True if row[row.index(seat)] not in ["R", "X", "S"] else False
+    return False
 
-    def book_seat(self, row, column):
-        """
-        Book a specific seat if it is available.
-        """
-        if self.check_availability(row, column):
-            self.seats[column][row-1] = 'R'
-            print(f"Seat {row}{column} has been booked.")
-        else:
-            print(f"Seat {row}{column} is already booked or unavailable.")
+def book_seat(seat):
+    for row in seats:
+        if seat in row:
+            if row[row.index(seat)] not in ["R", "X", "S"]:
+                row[row.index(seat)] = "R"
+                return True
+    return False
 
-    def free_seat(self, row, column):
-        """
-        Free a booked seat.
-        """
-        if self.seats[column][row-1] == 'R':
-            self.seats[column][row-1] = 'F'
-            print(f"Seat {row}{column} has been freed.")
-        else:
-            print(f"Seat {row}{column} is not booked.")
+def free_seat(seat):
+    for row in seats:
+        if seat in row:
+            if row[row.index(seat)] == "R":
+                row[row.index(seat)] = seat
+                return True
+    return False
 
-    def menu(self):
-        """
-        Display a menu for the user to interact with the seat booking system.
-        """
-        while True:
-            # Display menu options
-            print("\nMenu:")
-            print("1. Check availability of seat")
-            print("2. Book a seat")
-            print("3. Free a seat")
-            print("4. Show booking state")
-            print("5. Exit program")
+def menu():
+    while True:
+        print("\nMenu:")
+        print("1. Check availability of seat")
+        print("2. Book a seat")
+        print("3. Free a seat")
+        print("4. Show booking state")
+        print("5. Exit program")
 
-            # Get user choice and validate input
-            try:
-                choice = int(input("Choose an option: "))
-            except ValueError:
-                print("Invalid input. Please enter a number between 1 and 5.")
-                continue
-
-            # Execute the chosen menu option
-            if choice == 1:
-                # Check availability of a seat
-                try:
-                    row = int(input("Enter seat row number: "))
-                    column = input("Enter seat column letter: ").upper()
-                    if column not in self.columns:
-                        print("Invalid column letter.")
-                        continue
-                    if not (1 <= row <= self.rows):
-                        print("Invalid row number.")
-                        continue
-                    if self.check_availability(row, column):
-                        print(f"Seat {row}{column} is available.")
-                    else:
-                        print(f"Seat {row}{column} is not available.")
-                except ValueError:
-                    print("Invalid input. Please enter valid row number.")
-            elif choice == 2:
-                # Book a seat
-                try:
-                    row = int(input("Enter seat row number: "))
-                    column = input("Enter seat column letter: ").upper()
-                    if column not in self.columns:
-                        print("Invalid column letter.")
-                        continue
-                    if not (1 <= row <= self.rows):
-                        print("Invalid row number.")
-                        continue
-                    self.book_seat(row, column)
-                except ValueError:
-                    print("Invalid input. Please enter valid row number.")
-            elif choice == 3:
-                # Free a booked seat
-                try:
-                    row = int(input("Enter seat row number: "))
-                    column = input("Enter seat column letter: ").upper()
-                    if column not in self.columns:
-                        print("Invalid column letter.")
-                        continue
-                    if not (1 <= row <= self.rows):
-                        print("Invalid row number.")
-                        continue
-                    self.free_seat(row, column)
-                except ValueError:
-                    print("Invalid input. Please enter valid row number.")
-            elif choice == 4:
-                # Show booking state
-                self.display_seats()
-            elif choice == 5:
-                # Exit the program
-                print("Exiting program.")
-                break
+        choice = input("Enter your choice: ")
+        
+        if choice == '1':
+            seat = input("Enter seat to check availability: ")
+            if check_availability(seat):
+                print(f"Seat {seat} is available.")
             else:
-                # Invalid menu choice
-                print("Invalid choice. Please try again.")
+                print(f"Seat {seat} is not available.")
+        elif choice == '2':
+            seat = input("Enter seat to book: ")
+            if book_seat(seat):
+                print(f"Seat {seat} has been booked.")
+            else:
+                print(f"Seat {seat} cannot be booked.")
+        elif choice == '3':
+            seat = input("Enter seat to free: ")
+            if free_seat(seat):
+                print(f"Seat {seat} has been freed.")
+            else:
+                print(f"Seat {seat} cannot be freed.")
+        elif choice == '4':
+            display_seats()
+        elif choice == '5':
+            print("Exiting program.")
+            break
+        else:
+            print("Invalid choice, please try again.")
 
-# Example usage
-seat_booking = SeatBooking()
-seat_booking.menu()
+# Run the menu
+if __name__ == "__main__":
+    menu()
